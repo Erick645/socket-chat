@@ -1,3 +1,6 @@
+//
+//
+//
 const { io } = require('../server');
 const { Usuarios } = require('../classes/usuarios');
 const { crearMensaje } = require('../utilidades/utilidades');
@@ -18,12 +21,14 @@ io.on('connection', (client) => {
 
         usuarios.agregarPersona(client.id, data.nombre, data.sala);
         client.broadcast.to(data.sala).emit('listaPersonas', usuarios.getPersonasPorSala(data.sala))
+        client.broadcast.to(data.sala).emit('crearMensaje', crearMensaje('Administrador', `${data.nombre } se unió al chat`));
         callback(usuarios.getPersonasPorSala(data.sala));
     });
 
-    client.on('crearMensaje', (mensaje) => {
+    client.on('crearMensaje', (data, callback) => {
         let persona = usuarios.getPersona(client.id);
-        client.broadcast.to(persona.sala).emit('crearMensaje', crearMensaje(persona.nombre, mensaje));
+        client.broadcast.to(persona.sala).emit('crearMensaje', crearMensaje(persona.nombre, data.mensaje));
+        callback(data);
     });
 
     client.on('disconnect', () => {
